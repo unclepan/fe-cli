@@ -1,0 +1,25 @@
+{
+  "name": "root",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "bootstrap": "npx lerna bootstrap",
+    "build": "lerna exec -- yarn build",
+    "test": "lerna exec -- yarn test",
+    "lint": "lerna exec -- yarn lint",
+    "lint:fix": "lerna exec -- yarn lint:fix",
+    "postinstall": "husky install"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.6.3",
+    "@commitlint/config-conventional": "^17.6.3",
+    "husky": "^8.0.3",
+    "lerna": "^6.1.0",
+    "lint-staged": "^13.2.2"
+  },
+  "lint-staged": {
+    "**/*.ts": "yarn lint"
+  }
+}
