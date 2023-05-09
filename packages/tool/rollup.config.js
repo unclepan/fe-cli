@@ -1,14 +1,14 @@
-import resolve from '@rollup/plugin-node-resolve'
-import commonjs from '@rollup/plugin-commonjs'
-import typescript from '@rollup/plugin-typescript'
-import babel from '@rollup/plugin-babel' // tool-node 无需
-import clear from 'rollup-plugin-clear'
+const resolve = require('@rollup/plugin-node-resolve');
+const commonjs = require('@rollup/plugin-commonjs');
+const typescript = require('@rollup/plugin-typescript');
+const clear = require('rollup-plugin-clear');
 
 const shareConfig = {
   input: 'src/index.ts',
-  external: [
-    /@babel\/runtime/,
-  ], // tool-node 无需
+  // tool-node 无需
+  // external: [
+  //   /@babel\/runtime/,
+  // ],
   plugins: [
     clear({
       targets: ['dist', 'esm'],
@@ -18,40 +18,36 @@ const shareConfig = {
   ],
 }
 
-export default [
+module.exports = [
+  // {
+  //   ...shareConfig,
+  //   plugins: [
+  //     ...shareConfig.plugins,
+  //     typescript({
+  //       outDir: 'esm',
+  //     }),
+  //     babel({
+  //       babelHelpers: 'runtime',
+  //       extensions: ['.ts']
+  //     })
+  //   ],
+  //   output: [
+  //     {
+  //       dir: 'esm',
+  //       format: 'esm',
+  //       sourcemap: true,
+  //       preserveModules: true,
+  //       exports: 'auto',
+  //     },
+  //   ]
+  // },
   {
     ...shareConfig,
     plugins: [
       ...shareConfig.plugins,
       typescript({
-        outDir: 'esm',
+        outDir: 'dist',
       }),
-      babel({
-        babelHelpers: 'runtime',
-        extensions: ['.ts']
-      })
-    ],
-    output: [
-      {
-        dir: 'esm',
-        format: 'esm',
-        sourcemap: true,
-        preserveModules: true,
-        exports: 'auto',
-      },
-    ]
-  },
-  {
-    ...shareConfig,
-    plugins: [
-      ...shareConfig.plugins,
-      typescript({
-        outDir: 'lib',
-      }),
-      babel({
-        babelHelpers: 'runtime',
-        extensions: ['.ts']
-      })
     ],
     output: [
       {
