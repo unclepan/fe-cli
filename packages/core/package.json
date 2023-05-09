@@ -1,11 +1,14 @@
 {
-  "name": "@ccub/cli-tool",
+  "name": "@ccub/cli-core",
   "version": "0.0.0",
   "description": "> TODO: description",
   "author": "yangpan <738912168@qq..com>",
   "homepage": "https://github.com/unclepan/fe-cli#readme",
   "license": "ISC",
   "main": "dist/index.js",
+  "bin": {
+    "ccub": "dist/index.js"
+  },
   "directories": {
     "dist": "dist",
     "test": "__tests__"
