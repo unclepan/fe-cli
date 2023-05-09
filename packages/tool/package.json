@@ -52,5 +52,6 @@
   },
   "lint-staged": {
     "**/*.ts": "yarn lint"
-  }
+  },
+  "gitHead": "4332d5931a0e65a29eca01b4d5d5bd66e4bff3cf"
 }
