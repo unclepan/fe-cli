@@ -1,5 +1,12 @@
+
+import ss from './test/t'
+
+ss.t();
 function core() {
     return "Hello from core1";
 }
 
-core();
+const a  = core();
+
+console.log(a);
+
