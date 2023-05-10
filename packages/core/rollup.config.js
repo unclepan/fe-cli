@@ -50,6 +50,11 @@ export default [
       ...shareConfig.plugins,
       typescript({
         outDir: 'dist',
+        exclude: [
+          "jest.config.ts",
+          "__tests__/**/*.ts",
+          "dist",
+        ]
       }),
     ],
     // 输出文件 
