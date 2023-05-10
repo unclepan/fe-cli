@@ -1,11 +1,32 @@
-const resolve = require('@rollup/plugin-node-resolve');
-const commonjs = require('@rollup/plugin-commonjs');
-const typescript = require('@rollup/plugin-typescript');
-const clear = require('rollup-plugin-clear');
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import typescript from '@rollup/plugin-typescript';
+import clear from 'rollup-plugin-clear';
+import { readFile } from 'fs/promises';
+
+// (!) Circular dependencies 问题
+const onwarn = warning => {
+  // Silence circular dependency warning for moment package
+  if (
+    warning.code === 'CIRCULAR_DEPENDENCY'
+    // && !warning?.importer?.indexOf(path.normalize('node_modules/moment/src/lib/'))
+  ) {
+    return
+  }
+  console.warn(`(!) ${warning.message}`)
+}
+
+const pkg = JSON.parse(
+  await readFile(
+    new URL('./package.json', import.meta.url)
+  )
+);
 
 const shareConfig = {
+  // 入口文件，src/index.ts 
   input: 'src/index.ts',
-  // tool-node 无需
+  onwarn,
+  // node 无需
   // external: [
   //   /@babel\/runtime/,
   // ],
@@ -13,34 +34,16 @@ const shareConfig = {
     clear({
       targets: ['dist', 'esm'],
     }),
-    resolve(),
+    // 识别 commonjs 模式第三方依赖 
     commonjs(),
+    // 解析第三方依赖 
+    resolve({
+      preferBuiltins: true
+    }),
   ],
 }
 
-module.exports = [
-  // {
-  //   ...shareConfig,
-  //   plugins: [
-  //     ...shareConfig.plugins,
-  //     typescript({
-  //       outDir: 'esm',
-  //     }),
-  //     babel({
-  //       babelHelpers: 'runtime',
-  //       extensions: ['.ts']
-  //     })
-  //   ],
-  //   output: [
-  //     {
-  //       dir: 'esm',
-  //       format: 'esm',
-  //       sourcemap: true,
-  //       preserveModules: true,
-  //       exports: 'auto',
-  //     },
-  //   ]
-  // },
+export default [
   {
     ...shareConfig,
     plugins: [
@@ -49,22 +52,29 @@ module.exports = [
         outDir: 'dist',
       }),
     ],
+    // 输出文件 
     output: [
+      // commonjs 
       {
         banner: '#!/usr/bin/env node',
-        dir: 'dist',
+        file: pkg.main,  
         format: 'cjs',
         sourcemap: true,
-        preserveModules: true,
-        exports: 'auto',
-        // tool-node 启用 generatedCode
-        // generatedCode: {
-        //   arrowFunctions: true,
-        //   constBindings: true,
-        //   objectShorthand: true,
-        //   preset: 'es2015',
-        // }
       },
+      // es module 
+      // { 
+      //   // package.json 配置的 module 属性 
+      //   file: pkg.module, 
+      //   format: 'es', 
+      // }, 
+      // umd 
+      // { 
+      //     // umd 导出文件的全局变量 
+      //     name: 'RollupTsTemplate', 
+      //     // package.json 配置的 umd 属性 
+      //     file: pkg.umd, 
+      //     format: 'umd' 
+      // }
     ]
   }
 ]

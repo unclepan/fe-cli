@@ -6,6 +6,7 @@
   "exclude": [
     "dist",
     "__tests__/**/*.ts",
-    "jest.config.ts"
+    "jest.config.ts",
+    "node_modules"
   ]
 }

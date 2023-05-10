@@ -1,7 +1,7 @@
+import fs from 'fs';
 
-import ss from './test/t'
+console.log(fs);
 
-ss.t();
 function core() {
     return "Hello from core1";
 }
