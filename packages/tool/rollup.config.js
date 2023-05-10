@@ -61,7 +61,6 @@ export default [
     output: [
       // commonjs 
       {
-        banner: '#!/usr/bin/env node',
         file: pkg.main,  
         format: 'cjs',
         sourcemap: true,

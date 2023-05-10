@@ -60,6 +60,7 @@
   },
   "gitHead": "34083301541dd6af9748da88e4d9449df35bec43",
   "dependencies": {
+    "@ccub/cli-utils": "0.0.5",
     "colors": "^1.4.0",
     "commander": "^10.0.1",
     "fs-extra": "^11.1.1",
