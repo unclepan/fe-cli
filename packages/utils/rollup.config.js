@@ -1,8 +1,8 @@
-import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import typescript from '@rollup/plugin-typescript';
-import clear from 'rollup-plugin-clear';
-import { readFile } from 'fs/promises';
+const resolve = require('@rollup/plugin-node-resolve');
+const commonjs = require('@rollup/plugin-commonjs');
+const typescript = require('@rollup/plugin-typescript');
+const clear = require('rollup-plugin-clear');
+const pkg = require('./package.json');
 
 // (!) Circular dependencies 问题
 const onwarn = warning => {
@@ -15,12 +15,6 @@ const onwarn = warning => {
   }
   console.warn(`(!) ${warning.message}`)
 }
-
-const pkg = JSON.parse(
-  await readFile(
-    new URL('./package.json', import.meta.url)
-  )
-);
 
 const shareConfig = {
   // 入口文件，src/index.ts 
@@ -43,7 +37,7 @@ const shareConfig = {
   ],
 }
 
-export default [
+module.exports = [
   {
     ...shareConfig,
     plugins: [

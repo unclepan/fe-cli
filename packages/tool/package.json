@@ -62,5 +62,5 @@
     "semver": "^7.5.0",
     "user-home": "^3.0.0"
   },
-  "type": "module"
+  "type": "commonjs"
 }
