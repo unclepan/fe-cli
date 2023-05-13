@@ -1,6 +1,6 @@
 export default {
-  LOWEST_NODE_VERSION: '11.0.0',
-  DEFAULT_CLI_HOME: '.imooc-cli',
-  NPM_NAME: '@imooc-cli/core',
+  LOWEST_NODE_VERSION: '16.0.0',
+  DEFAULT_CLI_HOME: '.ccub-cli',
+  NPM_NAME: '@ccub/cli-core',
   DEPENDENCIES_PATH: 'dependencies',
 };

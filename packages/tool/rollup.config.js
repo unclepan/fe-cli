@@ -1,6 +1,7 @@
 const resolve = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const typescript = require('@rollup/plugin-typescript');
+const json = require("@rollup/plugin-json");
 const clear = require('rollup-plugin-clear');
 const pkg = require('./package.json');
 
@@ -28,6 +29,7 @@ const shareConfig = {
     clear({
       targets: ['dist', 'esm'],
     }),
+    json(),
     // 识别 commonjs 模式第三方依赖 
     commonjs(),
     // 解析第三方依赖 

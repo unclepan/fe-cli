@@ -3,7 +3,7 @@
 // import path from 'path';
 import log from './log';
 // import request from './request';
-// import npm from './npm';
+import npm from './npm';
 // import inquirer from './inquirer';
 // import spinner from './spinner';
 // import ejs from './ejs';
@@ -12,7 +12,7 @@ import log from './log';
 // import Package from './Package';
 // import Git from './Git/Git';
 // import file from './file';
-// import locale from './Locale/loadLocale';
+import locale from './locale/loadLocale';
 // import formatPath from './formatPath';
 
 // function sleep(timeout) {
@@ -72,7 +72,7 @@ import log from './log';
 export default {
   log,
 //   request,
-//   npm,
+  npm,
 //   inquirer,
 //   spinner,
 //   ejs,
@@ -84,6 +84,6 @@ export default {
 //   formatClassName,
 //   terminalLink,
 //   ...file,
-//   locale,
+  locale,
 //   formatPath,
 };

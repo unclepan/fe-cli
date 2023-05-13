@@ -1,10 +1,4 @@
-import log from '@ccub/cli-utils';
+import cli from './libs';
 
-console.log(log);
-
-function core() {
-    return "Hello from core1";
-}
-const a  = core();
-console.log(a);
+cli();
 
