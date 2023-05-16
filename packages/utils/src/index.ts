@@ -9,7 +9,7 @@ import npm from './npm';
 // import ejs from './ejs';
 // import terminalLink from './terminalLink';
 
-// import Package from './Package';
+import Package from './Package';
 // import Git from './Git/Git';
 // import file from './file';
 import locale from './locale/loadLocale';
@@ -76,7 +76,7 @@ export default {
 //   inquirer,
 //   spinner,
 //   ejs,
-//   Package,
+  Package,
 //   Git,
 //   sleep,
 //   exec,

@@ -20,6 +20,10 @@ const onwarn = warning => {
 const shareConfig = {
   // 入口文件，src/index.ts 
   input: 'src/index.ts',
+  external: [
+    ...Object.keys(pkg.dependencies || {}),
+    ...Object.keys(pkg.peerDependencies || {})
+  ],
   onwarn,
   // node 无需
   // external: [

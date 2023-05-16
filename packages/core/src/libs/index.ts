@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 // import fse from "fs-extra";
-// import program from 'commander';
+import { Command } from 'commander';
 import colors from 'colors/safe';
 import userHome from 'user-home';
 import semver from 'semver';
@@ -16,132 +16,135 @@ const { log, locale, npm } = utils;
 
 const { LOWEST_NODE_VERSION, DEFAULT_CLI_HOME, NPM_NAME } = CONST
 
+const program = new Command();
+
 const packageConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
 
 let args: minimist.ParsedArgs
-let config;
+let config: { home?: string | undefined; cliHome?: string | undefined; };
 
-// function registerCommand() {
-//   program.version(packageConfig.version).usage('<command> [options]');
+function registerCommand() {
+  program.version(packageConfig.version).usage('<command> [options]');
 
-//   program
-//     .command('learn')
-//     .description('访问课程链接')
-//     .action(() => {
-//       log.success('欢迎学习', '慕课网前端架构师课程');
-//       log.success('课程链接', 'https://coding.imooc.com/class/445.html');
-//       log.success('课程介绍', '小宇宙燃烧吧');
-//       log.success('作者介绍', 'Sam@2020');
-//     });
+  program
+    .command('learn')
+    .description('访问脚手架链接')
+    .action(() => {
+      log.success('脚手架链接', 'https://github.com/unclepan/fe-cli.git');
+    });
 
-//   program
-//     .command('init [type]')
-//     .description('项目初始化')
-//     .option('--packagePath <packagePath>', '手动指定init包路径')
-//     .option('--force', '覆盖当前路径文件（谨慎使用）')
-//     .action(async (type, { packagePath, force }) => {
-//       const packageName = '@imooc-cli/init';
-//       const packageVersion = '1.0.0';
-//       await execCommand({ packagePath, packageName, packageVersion }, { type, force });
-//     });
+  // program
+  //   .command('add')
+  //   .description('添加内容')
+  //   .action(add)
 
-//   program
-//     .command('publish')
-//     .description('项目发布')
-//     .option('--packagePath <packagePath>', '手动指定publish包路径')
-//     .option('--refreshToken', '强制更新git token信息')
-//     .option('--refreshOwner', '强制更新git owner信息')
-//     .option('--refreshServer', '强制更新git server信息')
-//     .option('--force', '强制更新所有缓存信息')
-//     .option('--prod', '正式发布')
-//     .option('--keepCache', '保留缓存')
-//     .option('--cnpm', '使用cnpm')
-//     .option('--buildCmd <buildCmd>', '手动指定build命令')
-//     .option('--sshUser <sshUser>', '模板服务端用户名')
-//     .option('--sshIp <sshIp>', '模板服务器IP或域名')
-//     .option('--sshPath <sshPath>', '模板服务器上传路径')
-//     .action(async ({
-//                      packagePath,
-//                      refreshToken,
-//                      refreshOwner,
-//                      refreshServer,
-//                      force,
-//                      prod,
-//                      sshUser,
-//                      sshIp,
-//                      sshPath,
-//                      keepCache,
-//                      cnpm,
-//                      buildCmd,
-//                    }) => {
-//       const packageName = '@imooc-cli/publish';
-//       const packageVersion = '1.0.0';
-//       if (force) {
-//         refreshToken = true;
-//         refreshOwner = true;
-//         refreshServer = true;
-//       }
-//       await execCommand({ packagePath, packageName, packageVersion }, {
-//         refreshToken,
-//         refreshOwner,
-//         refreshServer,
-//         prod,
-//         sshUser,
-//         sshIp,
-//         sshPath,
-//         keepCache,
-//         cnpm,
-//         buildCmd,
-//       });
-//     });
+  // program
+  //   .command('init [type]')
+  //   .description('项目初始化')
+  //   .option('--packagePath <packagePath>', '手动指定init包路径')
+  //   .option('--force', '覆盖当前路径文件（谨慎使用）')
+  //   .action(async (type, { packagePath, force }) => {
+  //     const packageName = '@imooc-cli/init';
+  //     const packageVersion = '1.0.0';
+  //     await execCommand({ packagePath, packageName, packageVersion }, { type, force });
+  //   });
 
-//   program
-//     .command('replace')
-//     .description('作业网站优化')
-//     .option('--packagePath <packagePath>', '手动指定replace包路径')
-//     .option('--region <region>', 'oss region')
-//     .option('--bucket <bucket>', 'oss bucket')
-//     .option('--ossAccessKey <ossAccessKey>', 'oss accessKey')
-//     .option('--ossSecretKey <ossSecretKey>', 'oss secretKey')
-//     .action(async ({ packagePath, region, bucket, ossAccessKey, ossSecretKey }) => {
-//       const packageName = '@imooc-cli/replace';
-//       const packageVersion = '1.0.0';
-//       await execCommand({ packagePath, packageName, packageVersion }, { region, bucket, ossAccessKey, ossSecretKey });
-//     });
+  // program
+  //   .command('publish')
+  //   .description('项目发布')
+  //   .option('--packagePath <packagePath>', '手动指定publish包路径')
+  //   .option('--refreshToken', '强制更新git token信息')
+  //   .option('--refreshOwner', '强制更新git owner信息')
+  //   .option('--refreshServer', '强制更新git server信息')
+  //   .option('--force', '强制更新所有缓存信息')
+  //   .option('--prod', '正式发布')
+  //   .option('--keepCache', '保留缓存')
+  //   .option('--cnpm', '使用cnpm')
+  //   .option('--buildCmd <buildCmd>', '手动指定build命令')
+  //   .option('--sshUser <sshUser>', '模板服务端用户名')
+  //   .option('--sshIp <sshIp>', '模板服务器IP或域名')
+  //   .option('--sshPath <sshPath>', '模板服务器上传路径')
+  //   .action(async ({
+  //     packagePath,
+  //     refreshToken,
+  //     refreshOwner,
+  //     refreshServer,
+  //     force,
+  //     prod,
+  //     sshUser,
+  //     sshIp,
+  //     sshPath,
+  //     keepCache,
+  //     cnpm,
+  //     buildCmd,
+  //   }) => {
+  //     const packageName = '@imooc-cli/publish';
+  //     const packageVersion = '1.0.0';
+  //     if (force) {
+  //       refreshToken = true;
+  //       refreshOwner = true;
+  //       refreshServer = true;
+  //     }
+  //     await execCommand({ packagePath, packageName, packageVersion }, {
+  //       refreshToken,
+  //       refreshOwner,
+  //       refreshServer,
+  //       prod,
+  //       sshUser,
+  //       sshIp,
+  //       sshPath,
+  //       keepCache,
+  //       cnpm,
+  //       buildCmd,
+  //     });
+  //   });
 
-//   program
-//     .command('clean')
-//     .description('清空缓存文件')
-//     .option('-a, --all', '清空全部')
-//     .option('-d, --dep', '清空依赖文件')
-//     .action((options) => {
-//       log.notice('开始清空缓存文件');
-//       if (options.all) {
-//         cleanAll();
-//       } else if (options.dep) {
-//         const depPath = path.resolve(config.cliHome, DEPENDENCIES_PATH);
-//         if (fs.existsSync(depPath)) {
-//           fse.emptyDirSync(depPath);
-//           log.success('清空依赖文件成功', depPath);
-//         } else {
-//           log.success('文件夹不存在', depPath);
-//         }
-//       } else {
-//         cleanAll();
-//       }
-//     });
+  // program
+  //   .command('replace')
+  //   .description('作业网站优化')
+  //   .option('--packagePath <packagePath>', '手动指定replace包路径')
+  //   .option('--region <region>', 'oss region')
+  //   .option('--bucket <bucket>', 'oss bucket')
+  //   .option('--ossAccessKey <ossAccessKey>', 'oss accessKey')
+  //   .option('--ossSecretKey <ossSecretKey>', 'oss secretKey')
+  //   .action(async ({ packagePath, region, bucket, ossAccessKey, ossSecretKey }) => {
+  //     const packageName = '@imooc-cli/replace';
+  //     const packageVersion = '1.0.0';
+  //     await execCommand({ packagePath, packageName, packageVersion }, { region, bucket, ossAccessKey, ossSecretKey });
+  //   });
 
-//   program
-//     .option('--debug', '打开调试模式')
-//     .parse(process.argv);
+  // program
+  //   .command('clean')
+  //   .description('清空缓存文件')
+  //   .option('-a, --all', '清空全部')
+  //   .option('-d, --dep', '清空依赖文件')
+  //   .action((options) => {
+  //     log.notice('开始清空缓存文件');
+  //     if (options.all) {
+  //       cleanAll();
+  //     } else if (options.dep) {
+  //       const depPath = path.resolve(config.cliHome, DEPENDENCIES_PATH);
+  //       if (fs.existsSync(depPath)) {
+  //         fse.emptyDirSync(depPath);
+  //         log.success('清空依赖文件成功', depPath);
+  //       } else {
+  //         log.success('文件夹不存在', depPath);
+  //       }
+  //     } else {
+  //       cleanAll();
+  //     }
+  //   });
 
-//   if (args._.length < 1) {
-//     program.outputHelp();
-//     console.log();
-//   }
-// }
+  program
+    .option('--debug', '打开调试模式')
+    .parse(process.argv);
 
-// async function execCommand({ packagePath, packageName, packageVersion }, extraOptions) {
+  if (args._.length < 1) {
+    program.outputHelp();
+  }
+}
+
+// async function execCommand({ packagePath, packageName, packageVersion }: {packagePath: string; packageName: string; packageVersion: string;}, extraOptions: unknown) {
 //   let rootFile;
 //   try {
 //     if (packagePath) {
@@ -208,8 +211,6 @@ let config;
 //     log.success('文件夹不存在', config.cliHome);
 //   }
 // }
-
-
 
 async function checkGlobalUpdate() {
   log.verbose('ccub','检查 ccub cli 最新版本');
@@ -297,7 +298,7 @@ async function prepare() {
 async function cli() {
     try {
         await prepare();
-        // registerCommand();
+        registerCommand();
     } catch (e: any) {
         log.error('ccub', e.message);
     }

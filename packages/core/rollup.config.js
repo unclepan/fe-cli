@@ -21,6 +21,10 @@ const shareConfig = {
   // 入口文件，src/index.ts 
   input: 'src/index.ts',
   // onwarn,
+  external: [
+    ...Object.keys(pkg.dependencies || {}),
+    ...Object.keys(pkg.peerDependencies || {})
+  ],
   // node 无需
   // external: [
   //   /@babel\/runtime/,
