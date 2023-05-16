@@ -1,6 +1,6 @@
 function getEnvLocale(env?: NodeJS.ProcessEnv | undefined) {
-  const selfEnv = env || process.env;
-  return selfEnv.LC_ALL || selfEnv.LC_MESSAGES || selfEnv.LANG || selfEnv.LANGUAGE;
+  const _env = env || process.env;
+  return _env.LC_ALL || _env.LC_MESSAGES || _env.LANG || _env.LANGUAGE;
 }
 
 export default getEnvLocale();

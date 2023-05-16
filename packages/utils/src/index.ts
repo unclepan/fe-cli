@@ -1,5 +1,6 @@
 
 
+import childProcess from 'child_process';
 // import path from 'path';
 import log from './log';
 // import request from './request';
@@ -21,14 +22,14 @@ import locale from './locale/loadLocale';
 //   }));
 // }
 
-// function exec(command, args, options) {
-//   const win32 = process.platform === 'win32';
+function exec(command: string, args: string[], options: {}) {
+  const win32 = process.platform === 'win32';
 
-//   const cmd = win32 ? 'cmd' : command;
-//   const cmdArgs = win32 ? ['/c'].concat(command, args) : args;
+  const cmd = win32 ? 'cmd' : command;
+  const cmdArgs = win32 ? ['/c'].concat(command, args) : args;
 
-//   return require('child_process').spawn(cmd, cmdArgs, options || {});
-// }
+  return childProcess.spawn(cmd, cmdArgs, options || {});
+}
 
 // function firstUpperCase(str) {
 //   return str.replace(/^\S/, s => s.toUpperCase());
@@ -79,7 +80,7 @@ export default {
   Package,
 //   Git,
 //   sleep,
-//   exec,
+  exec,
 //   formatName,
 //   formatClassName,
 //   terminalLink,

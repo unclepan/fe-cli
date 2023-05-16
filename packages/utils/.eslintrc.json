@@ -23,5 +23,14 @@
       "@typescript-eslint",
       "prettier"
   ],
-  "rules": {}
+  "rules": {
+    "no-underscore-dangle": 0,
+    "@typescript-eslint/naming-convention": [
+        "off",
+        {
+          "selector": "variable",
+          "format": ["camelCase"]
+        }
+      ]
+  }
 }

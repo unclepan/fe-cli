@@ -12,9 +12,9 @@ import utils from '@ccub/cli-utils';
 
 import CONST from "./const";
 
-const { log, locale, npm } = utils;
+const { log, npm, Package, exec, locale } = utils;
 
-const { LOWEST_NODE_VERSION, DEFAULT_CLI_HOME, NPM_NAME } = CONST
+const { LOWEST_NODE_VERSION, DEFAULT_CLI_HOME, NPM_NAME, DEPENDENCIES_PATH } = CONST
 
 const program = new Command();
 
@@ -22,6 +22,74 @@ const packageConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '../packag
 
 let args: minimist.ParsedArgs
 let config: { home?: string | undefined; cliHome?: string | undefined; };
+
+function handleError(e: any) {
+  if (args.debug) {
+    log.error('Error:', e.stack);
+  } else {
+    log.error('Error:', e.message);
+  }
+  process.exit(1);
+}
+
+// function cleanAll() {
+//   if (fs.existsSync(config.cliHome)) {
+//     fse.emptyDirSync(config.cliHome);
+//     log.success('清空全部缓存文件成功', config.cliHome);
+//   } else {
+//     log.success('文件夹不存在', config.cliHome);
+//   }
+// }
+
+async function execCommand({ packagePath, packageName, packageVersion }: {packagePath: string; packageName: string; packageVersion: string;}, extraOptions: {}) {
+  let rootFile: string;
+  try {
+    if (packagePath) {
+      const execPackage = new Package({
+        targetPath: packagePath,
+        storePath: packagePath,
+        name: packageName,
+        version: packageVersion,
+      });
+      rootFile = execPackage.getRootFilePath(true) || '';
+    } else {
+      const { cliHome = '' } = config;
+      const packageDir = `${DEPENDENCIES_PATH}`;
+      const targetPath = path.resolve(cliHome, packageDir);
+      const storePath = path.resolve(targetPath, 'node_modules');
+      const initPackage = new Package({
+        targetPath,
+        storePath,
+        name: packageName,
+        version: packageVersion,
+      });
+      if (await initPackage.exists()) {
+        await initPackage.update();
+      } else {
+        await initPackage.install();
+      }
+      rootFile = initPackage.getRootFilePath() || '';
+    }
+    const _config = { ...config, ...extraOptions, debug: args.debug,};
+    if (fs.existsSync(rootFile)) {
+      const code = `require('${rootFile}')(${JSON.stringify(_config)})`;
+      const p = exec('node', ['-e', code], { 'stdio': 'inherit' });
+      p.on('error', (e: string) => {
+        log.verbose('命令执行失败:', e);
+        handleError(e);
+        process.exit(1);
+      });
+      p.on('exit', (c: number) => {
+        log.verbose('命令执行成功:', `${c}`);
+        process.exit(c);
+      });
+    } else {
+      throw new Error('入口文件不存在，请重试！');
+    }
+  } catch (e: any) {
+    log.error('ccub', e.message);
+  }
+}
 
 function registerCommand() {
   program.version(packageConfig.version).usage('<command> [options]');
@@ -38,16 +106,16 @@ function registerCommand() {
   //   .description('添加内容')
   //   .action(add)
 
-  // program
-  //   .command('init [type]')
-  //   .description('项目初始化')
-  //   .option('--packagePath <packagePath>', '手动指定init包路径')
-  //   .option('--force', '覆盖当前路径文件（谨慎使用）')
-  //   .action(async (type, { packagePath, force }) => {
-  //     const packageName = '@imooc-cli/init';
-  //     const packageVersion = '1.0.0';
-  //     await execCommand({ packagePath, packageName, packageVersion }, { type, force });
-  //   });
+  program
+    .command('init [type]')
+    .description('项目初始化')
+    .option('--packagePath <packagePath>', '手动指定init包路径')
+    .option('--force', '覆盖当前路径文件（谨慎使用）')
+    .action(async (type, { packagePath, force }) => {
+      const packageName = '@ccub/cli-init';
+      const packageVersion = '0.0.9';
+      await execCommand({ packagePath, packageName, packageVersion }, { type, force });
+    });
 
   // program
   //   .command('publish')
@@ -144,73 +212,6 @@ function registerCommand() {
   }
 }
 
-// async function execCommand({ packagePath, packageName, packageVersion }: {packagePath: string; packageName: string; packageVersion: string;}, extraOptions: unknown) {
-//   let rootFile;
-//   try {
-//     if (packagePath) {
-//       const execPackage = new Package({
-//         targetPath: packagePath,
-//         storePath: packagePath,
-//         name: packageName,
-//         version: packageVersion,
-//       });
-//       rootFile = execPackage.getRootFilePath(true);
-//     } else {
-//       const { cliHome } = config;
-//       const packageDir = `${DEPENDENCIES_PATH}`;
-//       const targetPath = path.resolve(cliHome, packageDir);
-//       const storePath = path.resolve(targetPath, 'node_modules');
-//       const initPackage = new Package({
-//         targetPath,
-//         storePath,
-//         name: packageName,
-//         version: packageVersion,
-//       });
-//       if (await initPackage.exists()) {
-//         await initPackage.update();
-//       } else {
-//         await initPackage.install();
-//       }
-//       rootFile = initPackage.getRootFilePath();
-//     }
-//     const _config = { ...config, ...extraOptions, debug: args.debug,};
-//     if (fs.existsSync(rootFile)) {
-//       const code = `require('${rootFile}')(${JSON.stringify(_config)})`;
-//       const p = exec('node', ['-e', code], { 'stdio': 'inherit' });
-//       p.on('error', e => {
-//         log.verbose('命令执行失败:', e);
-//         handleError(e);
-//         process.exit(1);
-//       });
-//       p.on('exit', c => {
-//         log.verbose('命令执行成功:', c);
-//         process.exit(c);
-//       });
-//     } else {
-//       throw new Error('入口文件不存在，请重试！');
-//     }
-//   } catch (e) {
-//     log.error(e.message);
-//   }
-// }
-
-// function handleError(e) {
-//   if (args.debug) {
-//     log.error('Error:', e.stack);
-//   } else {
-//     log.error('Error:', e.message);
-//   }
-//   process.exit(1);
-// }
-
-// function cleanAll() {
-//   if (fs.existsSync(config.cliHome)) {
-//     fse.emptyDirSync(config.cliHome);
-//     log.success('清空全部缓存文件成功', config.cliHome);
-//   } else {
-//     log.success('文件夹不存在', config.cliHome);
-//   }
-// }
 
 async function checkGlobalUpdate() {
   log.verbose('ccub','检查 ccub cli 最新版本');

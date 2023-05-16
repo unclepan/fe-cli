@@ -44,10 +44,10 @@ async function getVersions(npm: string, registry?: string) {
 
 // 根据指定 version 获取符合 semver 规范的最新版本号
 function getLatestSemverVersion(baseVersion: string, versions: string[]) {
-  const selfVersions = versions
+  const _versions = versions
     .filter((version) => semver.satisfies(version, `^${  baseVersion}`))
     .sort((a, b) => semver.gt(b, a) as unknown as number);
-  return selfVersions[0];
+  return _versions[0];
 }
 
 // 根据指定 version 和包名获取符合 semver 规范的最新版本号
