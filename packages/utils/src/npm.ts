@@ -45,7 +45,7 @@ async function getVersions(npm: string, registry?: string) {
 // 根据指定 version 获取符合 semver 规范的最新版本号
 function getLatestSemverVersion(baseVersion: string, versions: string[]) {
   const _versions = versions
-    .filter((version) => semver.satisfies(version, `^${  baseVersion}`))
+    .filter((version) => semver.satisfies(version, `^${baseVersion}`))
     .sort((a, b) => semver.gt(b, a) as unknown as number);
   return _versions[0];
 }

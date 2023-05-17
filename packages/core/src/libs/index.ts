@@ -70,7 +70,7 @@ async function execCommand({ packagePath, packageName, packageVersion }: {packag
       }
       rootFile = initPackage.getRootFilePath() || '';
     }
-    const _config = { ...config, ...extraOptions, debug: args.debug,};
+    const _config = { ...config, ...extraOptions, debug: args.debug};
     if (fs.existsSync(rootFile)) {
       const code = `require('${rootFile}')(${JSON.stringify(_config)})`;
       const p = exec('node', ['-e', code], { 'stdio': 'inherit' });
@@ -113,7 +113,7 @@ function registerCommand() {
     .option('--force', '覆盖当前路径文件（谨慎使用）')
     .action(async (type, { packagePath, force }) => {
       const packageName = '@ccub/cli-init';
-      const packageVersion = '0.0.9';
+      const packageVersion = '0.0.10';
       await execCommand({ packagePath, packageName, packageVersion }, { type, force });
     });
 
@@ -214,7 +214,7 @@ function registerCommand() {
 
 
 async function checkGlobalUpdate() {
-  log.verbose('ccub','检查 ccub cli 最新版本');
+  log.verbose('checkGlobalUpdate','检查 ccub cli 最新版本');
   const currentVersion = packageConfig.version;
   const lastVersion = await npm.getNpmLatestSemverVersion(NPM_NAME, currentVersion);
   if (lastVersion && semver.gt(lastVersion, currentVersion)) {
@@ -239,7 +239,7 @@ function createCliConfig() {
 }
 
 function checkEnv() {
-  log.verbose('ccub', '开始检查环境变量');
+  log.verbose('checkEnv', '开始检查环境变量');
   dotenv.config({
     path: path.resolve(userHome, '.env'),
   });

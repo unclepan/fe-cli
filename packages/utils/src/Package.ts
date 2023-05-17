@@ -12,15 +12,20 @@ const useOriginNpm = false;
  * Package 类，用于管理动态下载的库文件
  */
 class Package {
+  // package的目标路径
   targetPath: string;
 
+  // 缓存package的路径
   storePath: string;
 
+  // package的name
   packageName: string;
 
+  // package的version
   packageVersion: string;
 
-  npmFilePathPrefix: string;
+  // package的缓存目录前缀
+  // npmFilePathPrefix: string;
 
   constructor(options: {
     targetPath: string;
@@ -33,11 +38,11 @@ class Package {
     this.storePath = options.storePath;
     this.packageName = options.name;
     this.packageVersion = options.version;
-    this.npmFilePathPrefix = this.packageName.replace('/', '_');
+    // this.npmFilePathPrefix = this.packageName.replace('/', '_');
   }
 
   get npmFilePath() {
-    return path.resolve(this.storePath, `_${this.npmFilePathPrefix}@${this.packageVersion}@${this.packageName}`);
+    return path.resolve(this.storePath, `${this.packageName}`);
   }
 
   async prepare() {
@@ -47,8 +52,8 @@ class Package {
     if (!fs.existsSync(this.storePath)) {
       fse.mkdirpSync(this.storePath);
     }
-    log.verbose('ccub', this.targetPath);
-    log.verbose('ccub', this.storePath);
+    log.verbose('package的目标路径', this.targetPath);
+    log.verbose('缓存package的路径', this.storePath);
     const latestVersion = await npm.getLatestVersion(this.packageName);
     log.verbose('latestVersion', this.packageName, latestVersion);
     if (latestVersion) {
@@ -56,6 +61,7 @@ class Package {
     }
   }
 
+  // 安装Package
   async install() {
     await this.prepare();
     return npminstall({
@@ -69,6 +75,7 @@ class Package {
     });
   }
 
+  // 判断当前Package是否存在
   async exists() {
     await this.prepare();
     return fs.existsSync(this.npmFilePath);
@@ -106,6 +113,7 @@ class Package {
     return null;
   }
 
+  // 更新Package
   async update() {
     const latestVersion = await this.getLatestVersion();
     return npminstall({

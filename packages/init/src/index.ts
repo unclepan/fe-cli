@@ -12,7 +12,7 @@
 // const DEFAULT_TYPE = TYPE_PROJECT;
 
 async function init(options: any) {
-    console.log(options);
+    console.log(options, 11);
     
 //   try {
 //     // 设置 targetPath
