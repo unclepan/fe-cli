@@ -1,6 +1,6 @@
 {
   "name": "@ccub/cli-core",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "> TODO: description",
   "author": "yangpan <738912168@qq..com>",
   "homepage": "https://github.com/unclepan/fe-cli#readme",
@@ -63,7 +63,7 @@
   },
   "gitHead": "34083301541dd6af9748da88e4d9449df35bec43",
   "dependencies": {
-    "@ccub/cli-utils": "^0.0.14",
+    "@ccub/cli-utils": "^0.0.15",
     "colors": "^1.4.0",
     "commander": "^10.0.1",
     "dotenv": "^16.0.3",
