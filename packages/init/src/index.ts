@@ -1,57 +1,25 @@
-// const fs = require('fs');
-// const fse = require('fs-extra');
+import fs from 'fs';
+import fse from 'fs-extra';
 import utils from '@ccub/cli-utils';
-
-const { log } = utils;
 // const { log, inquirer, spinner, Package, sleep, exec, formatName, formatClassName, ejs } = require('@imooc-cli/utils');
-// const getProjectTemplate = require('./getProjectTemplate');
+import getProjectTemplate from './getProjectTemplate';
+
+const { log, inquirer } = utils;
 
 // const COMPONENT_FILE = '.componentrc';
-// const TYPE_PROJECT = 'project';
-// const TYPE_COMPONENT = 'component';
+
+// 项目
+const TYPE_PROJECT = 'project';
+// 组件
+const TYPE_COMPONENT = 'component';
 // const TEMPLATE_TYPE_NORMAL = 'normal';
 // const TEMPLATE_TYPE_CUSTOM = 'custom';
+const DEFAULT_TYPE = TYPE_PROJECT;
 
-// const DEFAULT_TYPE = TYPE_PROJECT;
-
-async function init(options: {targetPath: string; debug: boolean;}) {
-    const _options = options;
-    try {
-        // 设置 targetPath
-        const targetPath = process.cwd();
-        if (!_options.targetPath) {
-            _options.targetPath = targetPath;
-        }
-        log.verbose('init', JSON.stringify(_options));
-        // 完成项目初始化的准备和校验工作
-        // const result = await prepare(_options);
-        // if (!result) {
-        //     log.info('info','创建项目终止');
-        //     return;
-        // }
-        // 获取项目模板列表
-        // const { templateList, project } = result;
-        // 缓存项目模板文件
-        // const template = await downloadTemplate(templateList, _options);
-        // log.verbose('template', template);
-        // if (template.type === TEMPLATE_TYPE_NORMAL) {
-        //     // 安装标准项目模板
-        //     await installTemplate(template, project, _options);
-        // } else if (template.type === TEMPLATE_TYPE_CUSTOM) {
-        //     // 自定义安装项目模板
-        //     await installCustomTemplate(template, project, _options);
-        // } else {
-        //     throw new Error('未知的模板类型！');
-        // }
-    } catch (e: any) {
-        if (_options.debug) {
-            log.error('Error:', e.stack);
-        } else {
-            log.error('Error:', e.message);
-        }
-    } finally {
-        process.exit(0);
-    }
+interface Options {
+    force: boolean;
+    targetPath: string; 
+    debug: boolean;
 }
 
 // async function installCustomTemplate(template, ejsData, options) {
@@ -211,35 +179,56 @@ async function init(options: {targetPath: string; debug: boolean;}) {
 //   return template;
 // }
 
-// async function prepare(options) {
-//   let fileList = fs.readdirSync(process.cwd());
-//   fileList = fileList.filter(file => ['node_modules', '.git', '.DS_Store'].indexOf(file) < 0);
-//   log.verbose('fileList', fileList);
-//   let continueWhenDirNotEmpty = true;
-//   if (fileList && fileList.length > 0) {
-//     continueWhenDirNotEmpty = await inquirer({
-//       type: 'confirm',
-//       message: '当前文件夹不为空，是否继续创建项目？',
-//       defaultValue: false,
-//     });
-//   }
-//   if (!continueWhenDirNotEmpty) {
-//     return;
-//   }
-//   if (options.force) {
-//     const targetDir = options.targetPath;
-//     const confirmEmptyDir = await inquirer({
-//       type: 'confirm',
-//       message: '是否确认清空当下目录下的文件',
-//       defaultValue: false,
-//     });
-//     if (confirmEmptyDir) {
-//       fse.emptyDirSync(targetDir);
-//     }
-//   }
-//   let initType = await getInitType();
-//   log.verbose('initType', initType);
-//   let templateList = await getProjectTemplate();
+function getInitType() {
+    return inquirer({
+        type: 'list',
+        choices: [
+            {
+                name: '项目',
+                value: TYPE_PROJECT,
+            }, 
+            {
+                name: '组件',
+                value: TYPE_COMPONENT,
+            }
+        ],
+        message: '请选择初始化类型',
+        defaultValue: DEFAULT_TYPE,
+    });
+}
+
+async function prepare(options: Options) {
+    let fileList = fs.readdirSync(process.cwd());
+    fileList = fileList.filter(file => ['node_modules', '.git', '.DS_Store'].indexOf(file) < 0);
+    log.verbose('fileList', JSON.stringify(fileList));
+    let continueWhenDirNotEmpty = true;
+    if (fileList && fileList.length > 0) {
+        continueWhenDirNotEmpty = await inquirer({
+            type: 'confirm',
+            message: '当前文件夹不为空，是否继续创建项目？',
+            defaultValue: false,
+        });
+    }
+    if (!continueWhenDirNotEmpty) {
+        return;
+    }
+    if (options.force) {
+        const targetDir = options.targetPath;
+        const confirmEmptyDir = await inquirer({
+            type: 'confirm',
+            message: '是否确认清空当下目录下的文件',
+            defaultValue: false,
+        });
+        if (confirmEmptyDir) {
+            fse.emptyDirSync(targetDir);
+        }
+    }
+
+    const initType = await getInitType();
+    log.verbose('initType', initType);
+
+    const templateList = await getProjectTemplate();
+    log.info('22', JSON.stringify(templateList))
 //   if (!templateList || templateList.length === 0) {
 //     throw new Error('项目模板列表获取失败');
 //   }
@@ -269,7 +258,7 @@ async function init(options: {targetPath: string; debug: boolean;}) {
 //         version,
 //       },
 //     };
-//   } else {
+//   } 
 //     templateList = templateList.filter(item => item.tag.includes('component'));
 //     let description = '';
 //     while (!description) {
@@ -285,8 +274,8 @@ async function init(options: {targetPath: string; debug: boolean;}) {
 //         description,
 //       },
 //     };
-//   }
-// }
+  
+}
 
 // function getComponentDescription() {
 //   return inquirer({
@@ -304,20 +293,6 @@ async function init(options: {targetPath: string; debug: boolean;}) {
 //   });
 // }
 
-// function getInitType() {
-//   return inquirer({
-//     type: 'list',
-//     choices: [{
-//       name: '项目',
-//       value: TYPE_PROJECT,
-//     }, {
-//       name: '组件',
-//       value: TYPE_COMPONENT,
-//     }],
-//     message: '请选择初始化类型',
-//     defaultValue: DEFAULT_TYPE,
-//   });
-// }
 
 // function getProjectName(initType) {
 //   return inquirer({
@@ -333,5 +308,45 @@ async function init(options: {targetPath: string; debug: boolean;}) {
 //     name: item.name,
 //   }));
 // }
+
+async function init(options: Options) {
+    const _options = options;
+    try {
+        // 设置targetPath
+        const targetPath = process.cwd();
+        if (!_options.targetPath) {
+            _options.targetPath = targetPath;
+        }
+        log.verbose('init', JSON.stringify(_options));
+        // 完成项目初始化的准备和校验工作
+        const result: any = await prepare(_options);
+        if (!result) {
+            log.info('info','创建项目终止');
+            return;
+        }
+        // 获取项目模板列表
+        // const { templateList, project } = result;
+        // 缓存项目模板文件
+        // const template = await downloadTemplate(templateList, _options);
+        // log.verbose('template', template);
+        // if (template.type === TEMPLATE_TYPE_NORMAL) {
+        //     // 安装标准项目模板
+        //     await installTemplate(template, project, _options);
+        // } else if (template.type === TEMPLATE_TYPE_CUSTOM) {
+        //     // 自定义安装项目模板
+        //     await installCustomTemplate(template, project, _options);
+        // } else {
+        //     throw new Error('未知的模板类型！');
+        // }
+    } catch (e: any) {
+        if (_options.debug) {
+            log.error('Error:', e.stack);
+        } else {
+            log.error('Error:', e.message);
+        }
+    } finally {
+        process.exit(0);
+    }
+}
 
 export default init;

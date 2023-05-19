@@ -213,7 +213,7 @@ function registerCommand() {
 }
 
 async function checkGlobalUpdate() {
-  log.verbose('checkGlobalUpdate','检查 ccub cli 最新版本');
+  log.verbose('checkGlobalUpdate','检查 ccub-cli 最新版本');
   const currentVersion = packageConfig.version;
   const lastVersion = await npm.getNpmLatestSemverVersion(NPM_NAME, currentVersion);
   if (lastVersion && semver.gt(lastVersion, currentVersion)) {

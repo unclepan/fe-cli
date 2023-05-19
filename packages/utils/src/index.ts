@@ -3,9 +3,9 @@
 import childProcess from 'child_process';
 // import path from 'path';
 import log from './log';
-// import request from './request';
+import request from './request';
 import npm from './npm';
-// import inquirer from './inquirer';
+import inquirer from './inquirer';
 // import spinner from './spinner';
 // import ejs from './ejs';
 // import terminalLink from './terminalLink';
@@ -72,9 +72,9 @@ function exec(command: string, args: string[], options: {}) {
 
 export default {
   log,
-//   request,
+  request,
   npm,
-//   inquirer,
+  inquirer,
 //   spinner,
 //   ejs,
   Package,
