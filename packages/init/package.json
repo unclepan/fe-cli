@@ -54,5 +54,8 @@
   },
   "lint-staged": {
     "**/*.ts": "yarn lint"
+  },
+  "dependencies": {
+    "@ccub/cli-utils": "^0.0.11"
   }
 }

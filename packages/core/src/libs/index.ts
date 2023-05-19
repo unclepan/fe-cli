@@ -87,7 +87,7 @@ async function execCommand({ packagePath, packageName, packageVersion }: {packag
       throw new Error('入口文件不存在，请重试！');
     }
   } catch (e: any) {
-    log.error('ccub', e.message);
+    log.error('Error:', e.message);
   }
 }
 
@@ -212,7 +212,6 @@ function registerCommand() {
   }
 }
 
-
 async function checkGlobalUpdate() {
   log.verbose('checkGlobalUpdate','检查 ccub cli 最新版本');
   const currentVersion = packageConfig.version;
@@ -301,7 +300,7 @@ async function cli() {
         await prepare();
         registerCommand();
     } catch (e: any) {
-        log.error('ccub', e.message);
+        log.error('Error:', e.message);
     }
 }
 
