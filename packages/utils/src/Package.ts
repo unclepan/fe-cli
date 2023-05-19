@@ -33,7 +33,7 @@ class Package {
     name: string;
     version: string;
   }) {
-    log.verbose('options', JSON.stringify(options));
+    log.verbose('Package:', JSON.stringify(options));
     this.targetPath = options.targetPath;
     this.storePath = options.storePath;
     this.packageName = options.name;
@@ -56,10 +56,7 @@ class Package {
     if (!fs.existsSync(this.storePath)) {
       fse.mkdirpSync(this.storePath);
     }
-    // log.verbose('package的目标路径', this.targetPath);
-    // log.verbose('缓存package的路径', this.storePath);
     const latestVersion = await npm.getLatestVersion(this.packageName);
-    // log.verbose('latestVersion', this.packageName, latestVersion);
     if (latestVersion) {
       this.packageVersion = latestVersion;
     }
@@ -122,9 +119,9 @@ class Package {
     const latestVersion: string = await this.getLatestVersion() || '';
     // 查询最新版本号对应的包是否存在
     const latestFilePath = this.getSpecificCacheFilePath(latestVersion);
-    console.log(latestVersion, latestFilePath, 'latestFilePath123');
     
     if(latestFilePath) return Promise.resolve();
+    fse.emptyDirSync(this.npmFilePath)
     return npminstall({
       root: this.targetPath,
       storeDir: this.storePath,

@@ -281,7 +281,7 @@ function checkNodeVersion() {
 }
 
 function checkPkgVersion() {
-  log.notice('ccub cli版本', packageConfig.version);
+  log.notice('ccub-cli版本', packageConfig.version);
   log.success(locale.welcome);
 }
 
