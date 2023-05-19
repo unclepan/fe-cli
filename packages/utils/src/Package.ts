@@ -6,7 +6,7 @@ import log from './log';
 import npm from './npm';
 import formatPath from './formatPath';
 
-const useOriginNpm = false;
+const useOriginNpm = true;
 
 /**
  * Package 类，用于管理动态下载的库文件
@@ -122,7 +122,8 @@ class Package {
     const latestVersion: string = await this.getLatestVersion() || '';
     // 查询最新版本号对应的包是否存在
     const latestFilePath = this.getSpecificCacheFilePath(latestVersion);
-  
+    console.log(latestVersion, latestFilePath, 'latestFilePath123');
+    
     if(latestFilePath) return Promise.resolve();
     return npminstall({
       root: this.targetPath,

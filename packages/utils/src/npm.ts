@@ -10,7 +10,7 @@ function getNpmRegistry(isOriginal = false) {
 
 // 从 registry 获取 npm 的信息
 async function getNpmInfo(npm: string, registry?: string)  {
-  const register = registry || getNpmRegistry();
+  const register = registry || getNpmRegistry(true);
   const url = urlJoin(register, npm);
   const response = await axios.get(url);
   try {
@@ -46,7 +46,7 @@ async function getVersions(npm: string, registry?: string) {
 function getLatestSemverVersion(baseVersion: string, versions: string[]) {
   const _versions = versions
     .filter((version) => semver.satisfies(version, `^${baseVersion}`))
-    .sort((a, b) => semver.gt(b, a) as unknown as number);
+    .sort((a, b) => semver.gt(b, a) ? 1 : -1);
   return _versions[0];
 }
 
