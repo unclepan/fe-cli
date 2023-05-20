@@ -6,16 +6,16 @@ const json = require("@rollup/plugin-json");
 const pkg = require('./package.json');
 
 // (!) Circular dependencies 问题
-const onwarn = warning => {
-  // Silence circular dependency warning for moment package
-  if (
-    warning.code === 'CIRCULAR_DEPENDENCY'
-    // && !warning?.importer?.indexOf(path.normalize('node_modules/moment/src/lib/'))
-  ) {
-    return
-  }
-  console.warn(`(!) ${warning.message}`)
-}
+// const onwarn = warning => {
+//   // Silence circular dependency warning for moment package
+//   if (
+//     warning.code === 'CIRCULAR_DEPENDENCY'
+//     // && !warning?.importer?.indexOf(path.normalize('node_modules/moment/src/lib/'))
+//   ) {
+//     return
+//   }
+//   console.warn(`(!) ${warning.message}`)
+// }
 
 const shareConfig = {
   // 入口文件，src/index.ts 
@@ -24,7 +24,7 @@ const shareConfig = {
     ...Object.keys(pkg.dependencies || {}),
     ...Object.keys(pkg.peerDependencies || {})
   ],
-  onwarn,
+  // onwarn,
   // node 无需
   // external: [
   //   /@babel\/runtime/,

@@ -1,10 +1,11 @@
 import fs from 'fs';
 import fse from 'fs-extra';
+import path from 'path';
 import utils from '@ccub/cli-utils';
 // const { log, inquirer, spinner, Package, sleep, exec, formatName, formatClassName, ejs } = require('@imooc-cli/utils');
 import getProjectTemplate from './getProjectTemplate';
 
-const { log, inquirer } = utils;
+const { log, inquirer, formatName, formatClassName, Package, spinner, sleep, ejs } = utils;
 
 // const COMPONENT_FILE = '.componentrc';
 
@@ -12,14 +13,29 @@ const { log, inquirer } = utils;
 const TYPE_PROJECT = 'project';
 // 组件
 const TYPE_COMPONENT = 'component';
-// const TEMPLATE_TYPE_NORMAL = 'normal';
-// const TEMPLATE_TYPE_CUSTOM = 'custom';
+// 标准项目模板
+const TEMPLATE_TYPE_NORMAL = 'normal';
+// 自定义安装项目模板
+const TEMPLATE_TYPE_CUSTOM = 'custom';
 const DEFAULT_TYPE = TYPE_PROJECT;
 
 interface Options {
     force: boolean;
     targetPath: string; 
     debug: boolean;
+    cliHome: string;
+}
+
+interface TemplateList {
+    name: string;
+    npmName: string;
+    version: string;
+    type: 'normal' | 'custom';
+    installCommand: string;
+    startCommand: string;
+    ignore: string[];
+    tag: [('component' | 'project')];
+    buildPath: string;
 }
 
 // async function installCustomTemplate(template, ejsData, options) {
@@ -91,93 +107,112 @@ interface Options {
 //   }
 // }
 
-// async function installTemplate(template, ejsData, options) {
-//   // 安装模板
-//   let spinnerStart = spinner(`正在安装模板...`);
-//   await sleep(1000);
-//   const sourceDir = template.path;
-//   const targetDir = options.targetPath;
-//   fse.ensureDirSync(sourceDir);
-//   fse.ensureDirSync(targetDir);
-//   fse.copySync(sourceDir, targetDir);
-//   spinnerStart.stop(true);
-//   log.success('模板安装成功');
-//   // ejs 模板渲染
-//   const ejsIgnoreFiles = [
-//     '**/node_modules/**',
-//     '**/.git/**',
-//     '**/.vscode/**',
-//     '**/.DS_Store',
-//   ];
-//   if (template.ignore) {
-//     ejsIgnoreFiles.push(...template.ignore);
-//   }
-//   log.verbose('ejsData', ejsData);
-//   await ejs(targetDir, ejsData, {
-//     ignore: ejsIgnoreFiles,
-//   });
-//   // 如果是组件，则进行特殊处理
-//   await createComponentFile(template, ejsData, targetDir);
-//   // 安装依赖文件
-//   log.notice('开始安装依赖');
-//   await npminstall(targetDir);
-//   log.success('依赖安装成功');
-//   // 启动代码
-//   if (template.startCommand) {
-//     log.notice('开始执行启动命令');
-//     const startCommand = template.startCommand.split(' ');
-//     await execStartCommand(targetDir, startCommand);
-//   }
-// }
 
-// async function downloadTemplate(templateList, options) {
-//   // 用户交互选择
-//   const templateName = await inquirer({
-//     choices: createTemplateChoice(templateList),
-//     message: '请选择项目模板',
-//   });
-//   log.verbose('template', templateName);
-//   const selectedTemplate = templateList.find(item => item.npmName === templateName);
-//   log.verbose('selected template', selectedTemplate);
-//   const { cliHome } = options;
-//   const targetPath = path.resolve(cliHome, 'template');
-//   // 基于模板生成 Package 对象
-//   const templatePkg = new Package({
-//     targetPath,
-//     storePath: targetPath,
-//     name: selectedTemplate.npmName,
-//     version: selectedTemplate.version,
-//   });
-//   // 如果模板不存在则进行下载
-//   if (!await templatePkg.exists()) {
-//     let spinnerStart = spinner(`正在下载模板...`);
-//     await sleep(1000);
-//     await templatePkg.install();
-//     spinnerStart.stop(true);
-//     log.success('下载模板成功');
-//   } else {
-//     log.notice('模板已存在', `${selectedTemplate.npmName}@${selectedTemplate.version}`);
-//     log.notice('模板路径', `${targetPath}`);
-//     let spinnerStart = spinner(`开始更新模板...`);
-//     await sleep(1000);
-//     await templatePkg.update();
-//     spinnerStart.stop(true);
-//     log.success('更新模板成功');
-//   }
-//   // 生成模板路径
-//   const templateSourcePath = templatePkg.npmFilePath;
-//   const templatePath = path.resolve(templateSourcePath, 'template');
-//   log.verbose('template path', templatePath);
-//   if (!fs.existsSync(templatePath)) {
-//     throw new Error(`[${templateName}]项目模板不存在！`);
-//   }
-//   const template = {
-//     ...selectedTemplate,
-//     path: templatePath,
-//     sourcePath: templateSourcePath,
-//   };
-//   return template;
-// }
+async function installTemplate(
+    template: TemplateList & { path: string; sourcePath: string; }, 
+    ejsData: { name: string; className: string; version: string; description: string; }, 
+    options: Options
+) {
+    // 安装模板
+    const spinnerStart = spinner(`正在安装模板...`);
+    await sleep(1000);
+    const sourceDir = template.path;
+    const targetDir = options.targetPath;
+    // 确保目录的存在。如果目录结构不存在
+    fse.ensureDirSync(sourceDir);
+    fse.ensureDirSync(targetDir);
+    fse.copySync(sourceDir, targetDir);
+    spinnerStart.stop(true);
+    log.success('模板安装成功');
+    // ejs 模板渲染
+    const ejsIgnoreFiles = [
+        '**/node_modules/**',
+        '**/.git/**',
+        '**/.vscode/**',
+        '**/.DS_Store',
+    ];
+    if (template.ignore) {
+        ejsIgnoreFiles.push(...template.ignore);
+    }
+    log.verbose('ejsData', JSON.stringify(ejsData));
+    await ejs(targetDir, ejsData, {
+        ignore: ejsIgnoreFiles,
+    });
+    // // 如果是组件，则进行特殊处理
+    // await createComponentFile(template, ejsData, targetDir);
+    // // 安装依赖文件
+    // log.notice('开始安装依赖');
+    // await npminstall(targetDir);
+    // log.success('依赖安装成功');
+    // // 启动代码
+    // if (template.startCommand) {
+    //     log.notice('开始执行启动命令');
+    //     const startCommand = template.startCommand.split(' ');
+    //     await execStartCommand(targetDir, startCommand);
+    // }
+}
+
+function createTemplateChoice(list: TemplateList[]) {
+    return list.map(item => ({
+        value: item.npmName,
+        name: item.name,
+    }));
+}
+
+async function downloadTemplate(templateList: TemplateList[], options: Options) {
+    // 用户交互选择
+    const templateName = await inquirer({
+        choices: createTemplateChoice(templateList),
+        message: '请选择项目模板',
+    });
+    log.verbose('template', templateName);
+
+    const selectedTemplate = templateList.find(item => item.npmName === templateName);
+    if (!selectedTemplate) {
+        return;
+    }
+    log.verbose('selected template', JSON.stringify(selectedTemplate));
+
+    const { cliHome } = options;
+    const targetPath = path.resolve(cliHome, 'template');
+    const storePath = path.resolve(targetPath, 'node_modules');
+    // // 基于模板生成 Package 对象
+    const templatePkg = new Package({
+        targetPath,
+        storePath,
+        name: selectedTemplate.npmName,
+        version: selectedTemplate.version,
+    });
+    // 如果模板不存在则进行下载
+    if (!await templatePkg.exists()) {
+        const spinnerStart = spinner(`正在下载模板...`);
+        await sleep(1000);
+        await templatePkg.install();
+        spinnerStart.stop(true);
+        log.success('下载模板成功');
+    } else {
+        log.notice('模板已存在', `${selectedTemplate.npmName}@${selectedTemplate.version}`);
+        log.notice('模板路径', `${targetPath}`);
+        const spinnerStart = spinner(`开始更新模板...`);
+        await sleep(1000);
+        await templatePkg.update();
+        spinnerStart.stop(true);
+        log.success('更新模板成功');
+    }
+    // 生成模板路径
+    const templateSourcePath = templatePkg.npmFilePath;
+    const templatePath = path.resolve(templateSourcePath, 'template');
+    log.verbose('template path', templatePath);
+    if (!fs.existsSync(templatePath)) {
+        throw new Error(`[${templateName}]项目模板不存在！`);
+    }
+    const template = {
+        ...selectedTemplate,
+        path: templatePath,
+        sourcePath: templateSourcePath,
+    };
+    return template;
+}
 
 function getInitType() {
     return inquirer({
@@ -195,6 +230,30 @@ function getInitType() {
         message: '请选择初始化类型',
         defaultValue: DEFAULT_TYPE,
     });
+}
+
+function getProjectName(initType: string) {
+    return inquirer({
+        type: 'string',
+        message: initType === TYPE_PROJECT ? '请输入项目名称' : '请输入组件名称',
+        defaultValue: '',
+    });
+}
+
+function getProjectVersion(defaultVersion: string, initType: string) {
+    return inquirer({
+      type: 'string',
+      message: initType === TYPE_PROJECT ? '请输入项目版本号' : '请输入组件版本号',
+      defaultValue: defaultVersion,
+    });
+}
+
+function getComponentDescription() {
+  return inquirer({
+    type: 'string',
+    message: '请输入组件的描述信息',
+    defaultValue: '',
+  });
 }
 
 async function prepare(options: Options) {
@@ -227,87 +286,56 @@ async function prepare(options: Options) {
     const initType = await getInitType();
     log.verbose('initType', initType);
 
-    const templateList = await getProjectTemplate();
-    log.info('22', JSON.stringify(templateList))
-//   if (!templateList || templateList.length === 0) {
-//     throw new Error('项目模板列表获取失败');
-//   }
-//   let projectName = '';
-//   let className = '';
-//   while (!projectName) {
-//     projectName = await getProjectName(initType);
-//     if (projectName) {
-//       projectName = formatName(projectName);
-//       className = formatClassName(projectName);
-//     }
-//     log.verbose('name', projectName);
-//     log.verbose('className', className);
-//   }
-//   let version = '1.0.0';
-//   do {
-//     version = await getProjectVersion(version, initType);
-//     log.verbose('version', version);
-//   } while (!version);
-//   if (initType === TYPE_PROJECT) {
-//     templateList = templateList.filter(item => item.tag.includes('project'));
-//     return {
-//       templateList,
-//       project: {
-//         name: projectName,
-//         className,
-//         version,
-//       },
-//     };
-//   } 
-//     templateList = templateList.filter(item => item.tag.includes('component'));
-//     let description = '';
-//     while (!description) {
-//       description = await getComponentDescription();
-//       log.verbose('description', description);
-//     }
-//     return {
-//       templateList,
-//       project: {
-//         name: projectName,
-//         className,
-//         version,
-//         description,
-//       },
-//     };
+    let templateList = await getProjectTemplate() as unknown as TemplateList[];
+    if (!templateList || templateList.length === 0) {
+        throw new Error('项目模板列表获取失败');
+    }
+    let projectName = '';
+    let className = '';
+    while (!projectName) {
+        projectName = await getProjectName(initType);
+        if (projectName) {
+            projectName = formatName(projectName);
+            className = formatClassName(projectName);
+        }
+        log.verbose('name', projectName);
+        log.verbose('className', className);
+    }
+    let version = '1.0.0';
+    do {
+        version = await getProjectVersion(version, initType);
+        log.verbose('version', version);
+    } while (!version);
+
+    if (initType === TYPE_PROJECT) {
+        templateList = templateList.filter(item => item.tag.includes('project'));
+        return {
+            templateList,
+            project: {
+                name: projectName,
+                className,
+                version,
+            },
+        }
+    } 
+
+    templateList = templateList.filter(item => item.tag.includes('component'));
+    let description = '';
+    while (!description) {
+        description = await getComponentDescription();
+        log.verbose('description', description);
+    }
+    return {
+        templateList,
+        project: {
+            name: projectName,
+            className,
+            version,
+            description,
+        },
+    };
   
 }
-
-// function getComponentDescription() {
-//   return inquirer({
-//     type: 'string',
-//     message: '请输入组件的描述信息',
-//     defaultValue: '',
-//   });
-// }
-
-// function getProjectVersion(defaultVersion, initType) {
-//   return inquirer({
-//     type: 'string',
-//     message: initType === TYPE_PROJECT ? '请输入项目版本号' : '请输入组件版本号',
-//     defaultValue: defaultVersion,
-//   });
-// }
-
-
-// function getProjectName(initType) {
-//   return inquirer({
-//     type: 'string',
-//     message: initType === TYPE_PROJECT ? '请输入项目名称' : '请输入组件名称',
-//     defaultValue: '',
-//   });
-// }
-
-// function createTemplateChoice(list) {
-//   return list.map(item => ({
-//     value: item.npmName,
-//     name: item.name,
-//   }));
-// }
 
 async function init(options: Options) {
     const _options = options;
@@ -325,19 +353,20 @@ async function init(options: Options) {
             return;
         }
         // 获取项目模板列表
-        // const { templateList, project } = result;
+        const { templateList, project } = result;
         // 缓存项目模板文件
-        // const template = await downloadTemplate(templateList, _options);
-        // log.verbose('template', template);
-        // if (template.type === TEMPLATE_TYPE_NORMAL) {
-        //     // 安装标准项目模板
-        //     await installTemplate(template, project, _options);
-        // } else if (template.type === TEMPLATE_TYPE_CUSTOM) {
-        //     // 自定义安装项目模板
-        //     await installCustomTemplate(template, project, _options);
-        // } else {
-        //     throw new Error('未知的模板类型！');
-        // }
+        const template = await downloadTemplate(templateList, _options);
+        log.verbose('template', JSON.stringify(template));
+        if(!template) return;
+        if (template.type === TEMPLATE_TYPE_NORMAL) {
+            // 安装标准项目模板
+            await installTemplate(template, project, _options);
+        } else if (template.type === TEMPLATE_TYPE_CUSTOM) {
+            // 自定义安装项目模板
+            // await installCustomTemplate(template, project, _options);
+        } else {
+            throw new Error('未知的模板类型！');
+        }
     } catch (e: any) {
         if (_options.debug) {
             log.error('Error:', e.stack);

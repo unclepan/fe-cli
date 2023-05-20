@@ -24,7 +24,10 @@
       "prettier"
   ],
   "rules": {
-    "no-underscore-dangle": 0,
+    "consistent-return": "off",
+    "no-useless-escape": "off",
+    "no-await-in-loop": "off",
+    "no-underscore-dangle": "off",
     "@typescript-eslint/naming-convention": [
         "off",
         {
