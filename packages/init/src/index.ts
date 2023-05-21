@@ -5,9 +5,9 @@ import utils from '@ccub/cli-utils';
 // const { log, inquirer, spinner, Package, sleep, exec, formatName, formatClassName, ejs } = require('@imooc-cli/utils');
 import getProjectTemplate from './getProjectTemplate';
 
-const { log, inquirer, formatName, formatClassName, Package, spinner, sleep, ejs } = utils;
+const { log, inquirer, formatName, formatClassName, Package, spinner, sleep, ejs, exec } = utils;
 
-// const COMPONENT_FILE = '.componentrc';
+const COMPONENT_FILE = '.componentrc';
 
 // 项目
 const TYPE_PROJECT = 'project';
@@ -68,44 +68,48 @@ interface TemplateList {
 //   });
 // }
 
-// async function npminstall(targetPath) {
-//   return new Promise((resolve, reject) => {
-//     const p = exec('npm', ['install', '--registry=https://registry.npm.taobao.org'], { stdio: 'inherit', cwd: targetPath });
-//     p.on('error', e => {
-//       reject(e);
-//     });
-//     p.on('exit', c => {
-//       resolve(c);
-//     });
-//   });
-// }
+async function npminstall(targetPath: string) {
+  return new Promise((resolve, reject) => {
+    const p = exec('npm', ['install', '--registry=https://registry.npm.taobao.org'], { stdio: 'inherit', cwd: targetPath });
+    p.on('error', (e: string) => {
+      reject(e);
+    });
+    p.on('exit', (c: number) => {
+      resolve(c);
+    });
+  });
+}
 
-// async function execStartCommand(targetPath, startCommand) {
-//   return new Promise((resolve, reject) => {
-//     const p = exec(startCommand[0], startCommand.slice(1), { stdio: 'inherit', cwd: targetPath });
-//     p.on('error', e => {
-//       reject(e);
-//     });
-//     p.on('exit', c => {
-//       resolve(c);
-//     });
-//   });
-// }
+async function execStartCommand(targetPath: string, startCommand: string[]) {
+  return new Promise((resolve, reject) => {
+    const p = exec(startCommand[0], startCommand.slice(1), { stdio: 'inherit', cwd: targetPath });
+    p.on('error', (e: string) => {
+      reject(e);
+    });
+    p.on('exit', (c: number) => {
+      resolve(c);
+    });
+  });
+}
 
-// // 如果是组件项目，则创建组件相关文件
-// async function createComponentFile(template, data, dir) {
-//   if (template.tag.includes(TYPE_COMPONENT)) {
-//     const componentData = {
-//       ...data,
-//       buildPath: template.buildPath,
-//       examplePath: template.examplePath,
-//       npmName: template.npmName,
-//       npmVersion: template.version,
-//     }
-//     const componentFile = path.resolve(dir, COMPONENT_FILE);
-//     fs.writeFileSync(componentFile, JSON.stringify(componentData));
-//   }
-// }
+// 如果是组件项目，则创建组件相关文件
+async function createComponentFile(
+    template: TemplateList & { path: string; sourcePath: string;examplePath?: string; }, 
+    data: { name: string; className: string; version: string; description: string; }, 
+    dir: string
+) {
+  if (template.tag.includes(TYPE_COMPONENT)) {
+    const componentData = {
+      ...data,
+      buildPath: template.buildPath,
+      examplePath: template.examplePath,
+      npmName: template.npmName,
+      npmVersion: template.version,
+    }
+    const componentFile = path.resolve(dir, COMPONENT_FILE);
+    fs.writeFileSync(componentFile, JSON.stringify(componentData));
+  }
+}
 
 
 async function installTemplate(
@@ -138,18 +142,18 @@ async function installTemplate(
     await ejs(targetDir, ejsData, {
         ignore: ejsIgnoreFiles,
     });
-    // // 如果是组件，则进行特殊处理
-    // await createComponentFile(template, ejsData, targetDir);
-    // // 安装依赖文件
-    // log.notice('开始安装依赖');
-    // await npminstall(targetDir);
-    // log.success('依赖安装成功');
-    // // 启动代码
-    // if (template.startCommand) {
-    //     log.notice('开始执行启动命令');
-    //     const startCommand = template.startCommand.split(' ');
-    //     await execStartCommand(targetDir, startCommand);
-    // }
+    // 如果是组件，则进行特殊处理
+    await createComponentFile(template, ejsData, targetDir);
+    // 安装依赖文件
+    log.notice('ccub', '开始安装依赖');
+    await npminstall(targetDir);
+    log.success('依赖安装成功');
+    // 启动代码
+    if (template.startCommand) {
+        log.notice('ccub', '开始执行启动命令');
+        const startCommand = template.startCommand.split(' ');
+        await execStartCommand(targetDir, startCommand);
+    }
 }
 
 function createTemplateChoice(list: TemplateList[]) {
