@@ -38,35 +38,45 @@ interface TemplateList {
     buildPath: string;
 }
 
-// async function installCustomTemplate(template, ejsData, options) {
-//   const pkgPath = path.resolve(template.sourcePath, 'package.json');
-//   const pkg = fse.readJsonSync(pkgPath);
-//   const rootFile = path.resolve(template.sourcePath, pkg.main);
-//   if (!fs.existsSync(rootFile)) {
-//     throw new Error('入口文件不存在！');
-//   }
-//   log.notice('开始执行自定义模板');
-//   const targetPath = options.targetPath;
-//   await execCustomTemplate(rootFile, {
-//     targetPath,
-//     data: ejsData,
-//     template,
-//   });
-//   log.success('自定义模板执行成功');
-// }
+function execCustomTemplate(rootFile: string, options = {}) {
+    const code = `require('${rootFile}')(${JSON.stringify(options)})`;
+    return new Promise((resolve, reject) => {
+        const p = exec('node', ['-e', code], { 'stdio': 'inherit' });
+        p.on('error', (e: string) => {
+            reject(e);
+        });
+        p.on('exit', (c: number) => {
+            resolve(c);
+        });
+    });
+}
 
-// function execCustomTemplate(rootFile, options) {
-//   const code = `require('${rootFile}')(${JSON.stringify(options)})`;
-//   return new Promise((resolve, reject) => {
-//     const p = exec('node', ['-e', code], { 'stdio': 'inherit' });
-//     p.on('error', e => {
-//       reject(e);
-//     });
-//     p.on('exit', c => {
-//       resolve(c);
-//     });
-//   });
-// }
+// 自定义安装项目模板
+async function installCustomTemplate(
+    template: TemplateList & { path: string; sourcePath: string; }, 
+    ejsData: { name: string; className: string; version: string; description: string; }, 
+    options: Options
+) 
+{
+    const pkgPath = path.resolve(template.sourcePath, 'package.json');
+    const pkg = fse.readJsonSync(pkgPath);
+    const rootFile = path.resolve(template.sourcePath, pkg.main);
+    if (!fs.existsSync(rootFile)) {
+        throw new Error('入口文件不存在！');
+    }
+    log.notice('ccub', '开始执行自定义模板');
+    const {targetPath} = options;
+    try {
+        await execCustomTemplate(rootFile, {
+            targetPath,
+            data: ejsData,
+            template,
+        });
+        log.success('ccub', '自定义模板执行成功');
+    } catch (error) {
+        log.error('ccub', '自定义模板执行失败');
+    }
+}
 
 async function npminstall(targetPath: string) {
   return new Promise((resolve, reject) => {
@@ -367,7 +377,7 @@ async function init(options: Options) {
             await installTemplate(template, project, _options);
         } else if (template.type === TEMPLATE_TYPE_CUSTOM) {
             // 自定义安装项目模板
-            // await installCustomTemplate(template, project, _options);
+            await installCustomTemplate(template, project, _options);
         } else {
             throw new Error('未知的模板类型！');
         }
